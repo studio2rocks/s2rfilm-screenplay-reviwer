@@ -1,0 +1,47 @@
+{
+  "appId": "com.s2rfilm.reviewer",
+  "productName": "S2RFilm Screenplay Reviewer",
+  "copyright": "Copyright © 2026 S2RFilm",
+  "directories": {
+    "output": "release-builds"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "package.json"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/pwa-512x512.png",
+    "artifactName": "${productName}-Setup-${version}.${ext}"
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "zip",
+        "arch": ["x64"]
+      }
+    ],
+    "category": "public.app-category.entertainment",
+    "icon": "public/pwa-512x512.png",
+    "artifactName": "${productName}-macOS-${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "S2RFilm Reviewer",
+    "uninstallDisplayName": "S2RFilm Reviewer"
+  }
+}

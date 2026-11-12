@@ -1,0 +1,6 @@
+{
+  "name": "S2RFilm Screenplay Reviewer",
+  "description": "Professional screenplay doctor & Hollywood coverage studio for film and television with strict voice preservation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
