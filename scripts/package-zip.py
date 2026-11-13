@@ -17,6 +17,7 @@ def package_project():
     exclude_dirs = {
         'node_modules',
         'dist',
+        'standalone-app',
         '.git',
         '.cache',
         '.aistudio',

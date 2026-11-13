@@ -1,0 +1,54 @@
+{
+  "appId": "com.s2rfilm.studio.desktop",
+  "productName": "S2RFilm Studio Desktop",
+  "copyright": "Copyright © 2026 S2RFilm Studio",
+  "directories": {
+    "output": "release-builds"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "electron/**/*",
+    "public/pwa-512x512.png",
+    "public/icon.ico",
+    "package.json"
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "icon": "public/pwa-512x512.png",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["arm64", "x64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["arm64", "x64"]
+      }
+    ],
+    "artifactName": "${productName}-${arch}-${version}.${ext}"
+  },
+  "win": {
+    "icon": "public/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-Setup-${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "S2RFilm Studio Desktop",
+    "uninstallDisplayName": "S2RFilm Studio Desktop"
+  }
+}

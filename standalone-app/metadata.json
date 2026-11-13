@@ -1,0 +1,8 @@
+{
+  "name": "S2RFilm Studio Desktop",
+  "description": "Standalone Mac & Windows Desktop Edition of S2RFilm Screenplay Reviewer & Dramaturgy Studio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

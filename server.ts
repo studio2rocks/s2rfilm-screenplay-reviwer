@@ -162,6 +162,31 @@ app.get('/api/download-zip', (_req: Request, res: Response) => {
   res.status(404).json({ error: 'Zip archive not found. Run npm run package to generate it.' });
 });
 
+// Download Duplicated Standalone Desktop App Endpoint (all | mac | windows)
+app.get('/api/download-desktop/:platform', (req: Request, res: Response) => {
+  const platform = req.params.platform;
+  const map: Record<string, string> = {
+    all: 's2rfilm-studio-desktop.zip',
+    mac: 's2rfilm-studio-mac.zip',
+    windows: 's2rfilm-studio-windows.zip'
+  };
+
+  const filename = map[platform];
+  if (!filename) {
+    res.status(400).json({ error: 'Invalid platform. Use all, mac, or windows.' });
+    return;
+  }
+
+  const zipPath = path.join(__dirname, 'public', filename);
+  if (fs.existsSync(zipPath)) {
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.sendFile(zipPath);
+  }
+
+  res.status(404).json({ error: `${filename} not found.` });
+});
+
 // Test Connection Endpoint for Settings
 app.post('/api/test-connection', async (req: Request, res: Response) => {
   try {

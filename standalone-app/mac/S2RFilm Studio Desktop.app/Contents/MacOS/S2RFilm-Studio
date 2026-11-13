@@ -1,0 +1,104 @@
+#!/bin/bash
+# Native macOS .app Launcher for S2RFilm Studio Desktop
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+RESOURCES_APP="$(cd "$SCRIPT_DIR/../Resources/app" 2>/dev/null && pwd)"
+APP_BUNDLE="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+PARENT_ROOT="$(cd "$APP_BUNDLE/../.." && pwd)"
+
+# Find Node.js across standard macOS, Homebrew, nvm, volta, and fnm paths
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.volta/bin:$HOME/.fnm/current/bin:$PATH"
+if ! command -v node >/dev/null 2>&1 && [ -d "$HOME/.nvm/versions/node" ]; then
+  LATEST_NVM="$(ls -1d "$HOME/.nvm/versions/node"/v* 2>/dev/null | sort -V | tail -n 1)"
+  [ -n "$LATEST_NVM" ] && export PATH="$LATEST_NVM/bin:$PATH"
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  osascript -e 'display alert "Node.js 18+ Required" message "Please install Node.js (LTS) from https://nodejs.org/ to launch S2RFilm Studio Desktop." as critical'
+  exit 1
+fi
+
+# Locate project root (prefer self-contained bundle inside .app/Contents/Resources/app)
+PROJECT_ROOT=""
+for CANDIDATE in \
+  "$RESOURCES_APP" \
+  "$PARENT_ROOT" \
+  "$HOME/Downloads/s2rfilm-studio-mac" \
+  "$HOME/Downloads/s2rfilm-studio-desktop" \
+  "$HOME/Desktop/s2rfilm-studio-mac" \
+  "$HOME/Desktop/s2rfilm-studio-desktop" \
+  "$HOME/Applications/s2rfilm-studio-desktop"; do
+  if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE/dist-electron/server.cjs" -o -f "$CANDIDATE/package.json" ]; then
+    PROJECT_ROOT="$CANDIDATE"
+    break
+  fi
+done
+
+if [ -z "$PROJECT_ROOT" ]; then
+  osascript -e 'display alert "App Files Missing" message "Could not locate S2RFilm Studio Desktop files. Keep the app inside its unzipped folder or run Install-To-Applications.command." as critical'
+  exit 1
+fi
+
+cd "$PROJECT_ROOT" || exit 1
+
+# If Electron is installed locally, prefer native Electron window
+if [ -x "node_modules/.bin/electron" ] && [ -f "dist-electron/server.cjs" ]; then
+  exec ./node_modules/.bin/electron .
+fi
+
+PORT=3480
+LOG_FILE="/tmp/s2rfilm-studio-desktop.log"
+
+open_app_window() {
+  local url="http://127.0.0.1:$PORT"
+  if [ -d "/Applications/Google Chrome.app" ]; then
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --app="$url" --new-window >/dev/null 2>&1 &
+  elif [ -d "/Applications/Microsoft Edge.app" ]; then
+    "/Applications/Microsoft Edge.app/Contents/Microsoft Edge" --app="$url" --new-window >/dev/null 2>&1 &
+  elif [ -d "/Applications/Brave Browser.app" ]; then
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" --app="$url" --new-window >/dev/null 2>&1 &
+  else
+    open "$url"
+  fi
+}
+
+# Reuse existing instance if already listening
+if curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1; then
+  open_app_window
+  exit 0
+fi
+
+# Start fast zero-dependency bundled server if pre-built (boots in ~0.2s)
+if [ -f "dist-electron/server.cjs" ] && [ -d "dist" ]; then
+  NODE_ENV=production PORT=$PORT S2R_APP_ROOT="$PROJECT_ROOT" S2R_DIST_DIR="$PROJECT_ROOT/dist" \
+    node dist-electron/server.cjs > "$LOG_FILE" 2>&1 &
+  SERVER_PID=$!
+else
+  if [ ! -d "node_modules" ]; then
+    osascript -e 'display notification "Installing dependencies on first launch..." with title "S2RFilm Studio Desktop"'
+    npm install > "$LOG_FILE" 2>&1
+  fi
+  PORT=$PORT npm run dev >> "$LOG_FILE" 2>&1 &
+  SERVER_PID=$!
+fi
+
+# Wait up to 25 seconds for health endpoint to actually respond before opening browser
+READY=0
+for i in $(seq 1 100); do
+  if curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1; then
+    READY=1
+    break
+  fi
+  if ! kill -0 $SERVER_PID 2>/dev/null; then
+    break
+  fi
+  sleep 0.25
+done
+
+if [ "$READY" -ne 1 ]; then
+  ERR_MSG="$(tail -n 8 "$LOG_FILE" 2>/dev/null | tr '"' "'")"
+  osascript -e "display alert \"Failed to Start Local Studio Server\" message \"Could not connect on http://127.0.0.1:$PORT.\n\n$ERR_MSG\" as critical"
+  exit 1
+fi
+
+open_app_window
+wait $SERVER_PID

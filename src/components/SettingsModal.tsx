@@ -20,7 +20,7 @@ import {
   Archive
 } from 'lucide-react';
 import { AIProvider, AISettings } from '../types/script';
-import { triggerDownload, downloadProjectZip } from '../utils/fileExporter';
+import { downloadProjectZip, downloadStandaloneDesktopZip } from '../utils/fileExporter';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -92,25 +92,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleSave = () => {
     onSaveSettings(tempSettings);
     onClose();
-  };
-
-  const handleDownloadWindowsLauncher = () => {
-    const batContent = `@echo off
-title S2RFilm Screenplay Reviewer Desktop
-echo Launching S2RFilm Screenplay Reviewer Studio...
-start "" "${window.location.origin}"
-exit
-`;
-    const blob = new Blob([batContent], { type: 'text/plain' });
-    triggerDownload(blob, 'Launch-S2RFilm-Reviewer.bat');
-  };
-
-  const handleDownloadMacLauncher = () => {
-    const commandContent = `#!/bin/bash
-open "${window.location.origin}"
-`;
-    const blob = new Blob([commandContent], { type: 'text/plain' });
-    triggerDownload(blob, 'Launch-S2RFilm-Reviewer.command');
   };
 
   return (
@@ -552,26 +533,67 @@ open "${window.location.origin}"
           {/* Tab 3: Desktop App & Project Archive */}
           {activeTab === 'desktop' && (
             <div className="space-y-3">
-              {/* Packaged Zip Archive Card */}
-              <div className="bg-zinc-950/70 border border-zinc-750 rounded-xl p-3 space-y-2">
+              {/* Standalone Desktop Edition (Mac & Windows) */}
+              <div className="bg-zinc-950/80 border border-zinc-600 rounded-xl p-3 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-100">
-                    <Archive className="w-3.5 h-3.5 text-zinc-300" />
-                    <span>Project Source Archive (.zip)</span>
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
+                    <Laptop className="w-3.5 h-3.5 text-white" />
+                    <span>Standalone Desktop App (Mac &amp; Windows)</span>
                   </div>
-                  <span className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 text-3xs font-mono">
-                    140 KB · ZIP
+                  <span className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-600 text-white text-3xs font-mono">
+                    ELECTRON + EXPRESS
                   </span>
                 </div>
 
                 <p className="text-3xs text-zinc-400 leading-relaxed">
-                  Export the complete offline-ready production repository: Express server, React 19 UI, deterministic dramaturgy engine, Hollywood coverage suite, Courier typography, and README.
+                  Duplicated standalone desktop edition (<span className="font-mono text-zinc-300">S2RFilm Studio Desktop</span>) with embedded Express server, macOS <span className="font-mono text-zinc-300">.app/.dmg</span> bundle, and Windows silent desktop launcher &amp; <span className="font-mono text-zinc-300">.exe</span> builder.
                 </p>
 
                 <button
                   type="button"
-                  onClick={downloadProjectZip}
+                  onClick={() => downloadStandaloneDesktopZip('all')}
                   className="w-full py-2 px-3 bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Full Desktop Edition (Mac + Win .zip)</span>
+                </button>
+
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => downloadStandaloneDesktopZip('mac')}
+                    className="py-1.5 px-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-750 text-2xs font-medium rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Apple className="w-3.5 h-3.5 text-zinc-300" />
+                    <span>macOS Bundle (.zip)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadStandaloneDesktopZip('windows')}
+                    className="py-1.5 px-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-750 text-2xs font-medium rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Terminal className="w-3.5 h-3.5 text-zinc-300" />
+                    <span>Windows Bundle (.zip)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Packaged Web App Source Archive Card */}
+              <div className="bg-zinc-950/60 border border-zinc-800 rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-200">
+                    <Archive className="w-3.5 h-3.5 text-zinc-300" />
+                    <span>Web App Source Archive (.zip)</span>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 text-3xs font-mono">
+                    ZIP
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={downloadProjectZip}
+                  className="w-full py-1.5 px-3 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 font-medium text-xs rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download s2rfilm-screenplay-reviewer.zip</span>
@@ -604,36 +626,6 @@ open "${window.location.origin}"
                     <span>Install PWA to Desktop</span>
                   </button>
                 )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-zinc-950/50 border border-zinc-800 rounded-xl p-2.5 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-zinc-200 text-xs font-semibold">
-                    <Terminal className="w-3.5 h-3.5 text-zinc-300" />
-                    <span>Windows Launcher</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleDownloadWindowsLauncher}
-                    className="w-full py-1.5 px-2 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 text-2xs rounded-md transition-colors cursor-pointer"
-                  >
-                    Download .bat
-                  </button>
-                </div>
-
-                <div className="bg-zinc-950/50 border border-zinc-800 rounded-xl p-2.5 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-zinc-200 text-xs font-semibold">
-                    <Apple className="w-3.5 h-3.5 text-zinc-300" />
-                    <span>macOS Launcher</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleDownloadMacLauncher}
-                    className="w-full py-1.5 px-2 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 text-2xs rounded-md transition-colors cursor-pointer"
-                  >
-                    Download .command
-                  </button>
-                </div>
               </div>
             </div>
           )}

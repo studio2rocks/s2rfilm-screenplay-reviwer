@@ -13,9 +13,9 @@ import { SettingsModal } from './components/SettingsModal';
 import { SAMPLE_SCRIPTS } from './data/sampleScripts';
 import { AISettings, FullCoverageReport, ScriptMetadata } from './types/script';
 import { parseScreenplayText, generateHeuristicCoverage } from './server/dramaturgyEngine';
-import { exportCoverageReportToDocx, downloadProjectZip } from './utils/fileExporter';
+import { exportCoverageReportToDocx, downloadStandaloneDesktopZip } from './utils/fileExporter';
 import { usePWAInstall } from './hooks/usePWAInstall';
-import { Archive, Download } from 'lucide-react';
+import { Laptop, Download } from 'lucide-react';
 
 const DEFAULT_AI_SETTINGS: AISettings = {
   provider: 'gemini',
@@ -143,36 +143,50 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Packaged Zip Download Prompt Banner */}
+        {/* Standalone Desktop Edition Download Banner */}
         {showDownloadBanner && (
-          <div className="mb-6 p-3.5 sm:p-4 rounded-xl bg-zinc-900 border border-zinc-750 text-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+          <div className="mb-6 p-3.5 sm:p-4 rounded-xl bg-zinc-900 border border-zinc-750 text-zinc-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 text-white">
-                <Archive className="w-4 h-4 text-white" />
+                <Laptop className="w-4 h-4 text-white" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-white flex items-center gap-2">
-                  <span>Project Archive Ready</span>
-                  <span className="text-3xs font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700">
-                    140 KB · ZIP
+                <div className="text-xs font-semibold text-white flex items-center gap-2 flex-wrap">
+                  <span>S2RFilm Studio Desktop — Duplicated Standalone Edition</span>
+                  <span className="text-3xs font-mono text-zinc-300 px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700">
+                    macOS &amp; WINDOWS
                   </span>
                 </div>
                 <p className="text-2xs text-zinc-400 mt-0.5">
-                  Save <span className="font-mono text-zinc-300">s2rfilm-screenplay-reviewer.zip</span> directly to your Desktop / local downloads.
+                  Includes embedded Electron + Express runtime, macOS <span className="font-mono text-zinc-300">.app / .dmg</span> builder, and Windows silent desktop shortcut &amp; <span className="font-mono text-zinc-300">.exe</span> builder.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center flex-wrap gap-2 shrink-0">
               <button
-                onClick={() => downloadProjectZip()}
+                onClick={() => downloadStandaloneDesktopZip('mac')}
+                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-100 border border-zinc-700 font-medium text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>macOS (.zip)</span>
+              </button>
+              <button
+                onClick={() => downloadStandaloneDesktopZip('windows')}
+                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-100 border border-zinc-700 font-medium text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Windows (.zip)</span>
+              </button>
+              <button
+                onClick={() => downloadStandaloneDesktopZip('all')}
                 className="px-3.5 py-1.5 bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Save to Desktop (.zip)</span>
+                <span>All-in-One Mac + Win (.zip)</span>
               </button>
               <button
                 onClick={() => setShowDownloadBanner(false)}
-                className="px-2.5 py-1.5 text-2xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="px-2 py-1.5 text-2xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
               >
                 Dismiss
               </button>

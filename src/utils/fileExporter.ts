@@ -236,3 +236,22 @@ export function downloadProjectZip(): void {
   a.click();
   document.body.removeChild(a);
 }
+
+/**
+ * Triggers instant browser download of the duplicated standalone desktop application
+ */
+export function downloadStandaloneDesktopZip(platform: 'all' | 'mac' | 'windows' = 'all'): void {
+  const filename =
+    platform === 'mac'
+      ? 's2rfilm-studio-mac.zip'
+      : platform === 'windows'
+      ? 's2rfilm-studio-windows.zip'
+      : 's2rfilm-studio-desktop.zip';
+
+  const a = document.createElement('a');
+  a.href = `/api/download-desktop/${platform}`;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
